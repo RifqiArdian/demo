@@ -45,4 +45,9 @@ public class PostgresProductRepository implements ProductRepository {
         // Langsung hapus menggunakan JPA
         jpaRepository.deleteById(id);
     }
+
+    @Override
+    public boolean existsById(Long id) {
+        return jpaRepository.existsById(id);
+    }
 }

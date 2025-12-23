@@ -1,8 +1,11 @@
 package com.example.demo.web.controller;
 
-import com.example.demo.application.service.ProductService;
 import com.example.demo.domain.model.Product;
+import com.example.demo.domain.repository.ProductRepository;
+import com.example.demo.web.dto.WebResponse;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,26 +16,61 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductController {
 
-    private final ProductService productService;
-
-    @PostMapping
-    public ResponseEntity<Product> create(@RequestBody Product product) {
-        return ResponseEntity.ok(productService.createProduct(product));
-    }
+    private final ProductRepository productRepository;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAll() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<WebResponse<List<Product>>> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+        return ResponseEntity.ok(
+            WebResponse.<List<Product>>builder()
+                .message("Berhasil mengambil data produk")
+                .data(products)
+                .build()
+        );
+    }
+
+    @PostMapping
+    public ResponseEntity<WebResponse<Product>> createProduct(@RequestBody Product product) {
+        productRepository.save(product);
+        return ResponseEntity.ok(
+            WebResponse.<Product>builder()
+                .message("Produk berhasil ditambahkan")
+                .data(product)
+                .build()
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.getProductById(id));
+    public ResponseEntity<?> getProductById(@PathVariable Long id) {
+        return productRepository.findById(id)
+            .map(product -> ResponseEntity.ok(
+                WebResponse.<Product>builder()
+                    .message("Berhasil mengambil data produk")
+                    .data(product)
+                    .build()
+            ))
+            .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                WebResponse.<Product>builder()
+                    .message("Produk dengan ID " + id + " tidak ditemukan")
+                    .build()
+            ));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        if (productRepository.existsById(id)) {
+            productRepository.deleteById(id);
+            return ResponseEntity.ok(
+                WebResponse.builder()
+                    .message("Produk berhasil dihapus")
+                    .build()
+            );
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                WebResponse.builder()
+                    .message("Gagal menghapus! Produk dengan ID " + id + " tidak ditemukan")
+                    .build()
+            );
+        }
     }
 }
