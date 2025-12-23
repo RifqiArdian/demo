@@ -1,7 +1,7 @@
 package com.example.demo.web.controller;
 
+import com.example.demo.domain.repository.UserRepository; // Import interface Domain
 import com.example.demo.infrastructure.entity.UserEntity;
-import com.example.demo.infrastructure.repository.UserRepository;
 import com.example.demo.infrastructure.security.JwtService;
 import com.example.demo.web.dto.AuthResponse;
 import com.example.demo.web.dto.LoginRequest;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final UserRepository userRepository; // Sekarang menggunakan interface Domain
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
@@ -56,9 +56,7 @@ public class AuthController {
                 );
             })
             .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                WebResponse.builder()
-                    .message("Username atau password salah!")
-                    .build()
+                WebResponse.builder().message("Username atau password salah!").build()
             ));
     }
 }
