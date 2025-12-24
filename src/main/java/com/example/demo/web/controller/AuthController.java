@@ -1,15 +1,12 @@
 package com.example.demo.web.controller;
 
-import com.example.demo.domain.repository.UserRepository; // Import interface Domain
-import com.example.demo.infrastructure.entity.UserEntity;
-import com.example.demo.infrastructure.security.JwtService;
+import com.example.demo.application.service.AuthService;
 import com.example.demo.web.dto.AuthResponse;
 import com.example.demo.web.dto.LoginRequest;
 import com.example.demo.web.dto.WebResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,46 +14,31 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserRepository userRepository; // Sekarang menggunakan interface Domain
-    private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody LoginRequest request) {
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body(
-                WebResponse.builder().message("Username sudah digunakan").build()
-            );
-        }
-
-        UserEntity user = new UserEntity();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(user);
-
-        return ResponseEntity.ok(
-            WebResponse.builder()
+    public ResponseEntity<WebResponse<String>> register(@RequestBody LoginRequest request) {
+        try {
+            String username = authService.register(request);
+            return ResponseEntity.ok(WebResponse.<String>builder()
                 .message("Register berhasil")
-                .data(request.getUsername())
-                .build()
-        );
+                .data(username).build());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(WebResponse.<String>builder()
+                .message(e.getMessage()).build());
+        }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        return userRepository.findByUsername(request.getUsername())
-            .filter(user -> passwordEncoder.matches(request.getPassword(), user.getPassword()))
-            .map(user -> {
-                String token = jwtService.generateToken(user.getUsername());
-                return ResponseEntity.ok(
-                    WebResponse.builder()
-                        .message("Login berhasil")
-                        .data(new AuthResponse(token))
-                        .build()
-                );
-            })
-            .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                WebResponse.builder().message("Username atau password salah!").build()
-            ));
+    public ResponseEntity<WebResponse<AuthResponse>> login(@RequestBody LoginRequest request) {
+        try {
+            String token = authService.login(request);
+            return ResponseEntity.ok(WebResponse.<AuthResponse>builder()
+                .message("Login berhasil")
+                .data(new AuthResponse(token)).build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(WebResponse.<AuthResponse>builder()
+                .message(e.getMessage()).build());
+        }
     }
 }
