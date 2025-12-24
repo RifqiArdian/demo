@@ -31,11 +31,11 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<WebResponse<Product>> createProduct(@RequestBody Product product) {
-        productRepository.save(product);
-        return ResponseEntity.ok(
+        Product saved = productRepository.save(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(
             WebResponse.<Product>builder()
                 .message("Produk berhasil ditambahkan")
-                .data(product)
+                .data(saved)
                 .build()
         );
     }
@@ -49,7 +49,7 @@ public class ProductController {
                     .data(product)
                     .build()
             ))
-            .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 WebResponse.<Product>builder()
                     .message("Produk dengan ID " + id + " tidak ditemukan")
                     .build()
@@ -66,7 +66,7 @@ public class ProductController {
                     .build()
             );
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
                 WebResponse.builder()
                     .message("Gagal menghapus! Produk dengan ID " + id + " tidak ditemukan")
                     .build()
