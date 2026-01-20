@@ -2,7 +2,11 @@ package com.example.demo.web.controller;
 
 import com.example.demo.domain.model.Product;
 import com.example.demo.domain.repository.ProductRepository;
+import com.example.demo.infrastructure.mapper.ProductMapper;
+import com.example.demo.web.dto.ProductRequest;
 import com.example.demo.web.dto.WebResponse;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -30,7 +34,8 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<WebResponse<Product>> createProduct(@RequestBody Product product) {
+    public ResponseEntity<WebResponse<Product>> createProduct(@Valid @RequestBody ProductRequest productRequest) {
+        Product product = ProductMapper.toModel(productRequest);
         Product saved = productRepository.save(product);
         return ResponseEntity.status(HttpStatus.CREATED).body(
             WebResponse.<Product>builder()

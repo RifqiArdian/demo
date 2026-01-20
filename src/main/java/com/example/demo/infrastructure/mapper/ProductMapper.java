@@ -2,6 +2,7 @@ package com.example.demo.infrastructure.mapper;
 
 import com.example.demo.domain.model.Product;
 import com.example.demo.infrastructure.entity.ProductEntity;
+import com.example.demo.web.dto.ProductRequest;
 
 public class ProductMapper {
 
@@ -33,5 +34,15 @@ public class ProductMapper {
         entity.setName(product.getName());
         entity.setPrice(product.getPrice());
         return entity;
+    }
+
+    public static Product toModel(ProductRequest product) {
+        if (product == null) {
+            return null;
+        }
+        Product model = new Product();
+        model.setName(product.getName());
+        model.setPrice(product.getPrice());
+        return model;
     }
 }

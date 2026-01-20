@@ -1,12 +1,14 @@
 package com.example.demo.infrastructure.repository;
 
+import java.util.Optional;
+
+import org.springframework.stereotype.Repository;
+
 import com.example.demo.domain.model.User;
 import com.example.demo.domain.repository.UserRepository;
 import com.example.demo.infrastructure.entity.UserEntity;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
