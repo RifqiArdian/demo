@@ -2,7 +2,6 @@ package com.example.demo.web.controller;
 
 import com.example.demo.application.service.ProductService;
 import com.example.demo.domain.model.Product;
-import com.example.demo.infrastructure.mapper.ProductMapper;
 import com.example.demo.web.dto.ProductRequest;
 import com.example.demo.web.dto.WebResponse;
 
@@ -35,8 +34,7 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<WebResponse<Product>> createProduct(@Valid @RequestBody ProductRequest productRequest) {
-        Product product = ProductMapper.toModel(productRequest);
-        Product saved = productService.createProduct(product);
+        Product saved = productService.createProduct(productRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(
             WebResponse.<Product>builder()
                 .message("Produk berhasil ditambahkan")
@@ -61,6 +59,19 @@ public class ProductController {
         productService.delete(id);
         return ResponseEntity.ok(WebResponse.<String>builder()
                 .message("Produk berhasil dihapus")
+                .build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<WebResponse<Product>> updateProduct(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductRequest request) {
+
+        Product updatedProduct = productService.update(id, request);
+
+        return ResponseEntity.ok(WebResponse.<Product>builder()
+                .message("Produk berhasil diperbarui")
+                .data(updatedProduct)
                 .build());
     }
 }

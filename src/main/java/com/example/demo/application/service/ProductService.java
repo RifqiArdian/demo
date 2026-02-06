@@ -3,6 +3,8 @@ package com.example.demo.application.service;
 import com.example.demo.domain.model.Product;
 import com.example.demo.domain.repository.ProductRepository;
 
+import com.example.demo.infrastructure.mapper.ProductMapper;
+import com.example.demo.web.dto.ProductRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,8 @@ import java.util.List;
 public class ProductService {
     private final ProductRepository productRepository;
 
-    public Product createProduct(Product product) {
+    public Product createProduct(ProductRequest productRequest) {
+        Product product = ProductMapper.toModel(productRequest);
         return productRepository.save(product);
     }
 
@@ -34,5 +37,20 @@ public class ProductService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Gagal menghapus! Produk tidak ditemukan");
         }
         productRepository.deleteById(id);
+    }
+
+    public Product update(Long id, ProductRequest request) {
+        // 1. Cari produknya, jika tidak ada lempar error 404
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Produk tidak ditemukan"));
+
+        // 2. Update datanya
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+
+        // 3. Simpan kembali
+        productRepository.save(product);
+
+        return product;
     }
 }
