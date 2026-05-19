@@ -1,7 +1,6 @@
 package com.example.demo.infrastructure.security;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,14 +15,14 @@ public class JwtService {
     private final Key secretKey;
     private static final long EXPIRATION_TIME = 86400000;
 
-    public JwtService(@Value("${jwt.secret:}") String jwtSecret) {
-        if (jwtSecret != null && !jwtSecret.isBlank()) {
-            byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-            this.secretKey = Keys.hmacShaKeyFor(keyBytes);
-        } else {
-            // fallback (ingat: ini membuat token invalid setelah restart)
-            this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    public JwtService(@Value("${jwt.secret}") String jwtSecret) {
+        if (jwtSecret == null || jwtSecret.isBlank()) {
+            throw new IllegalArgumentException(
+                "JWT secret must be configured. Set 'jwt.secret' property in application.properties or .env file"
+            );
         }
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateToken(String username) {

@@ -49,8 +49,6 @@ public class ProductService {
         product.setPrice(request.getPrice());
 
         // 3. Simpan kembali
-        productRepository.save(product);
-
-        return product;
+        return productRepository.save(product);
     }
 }

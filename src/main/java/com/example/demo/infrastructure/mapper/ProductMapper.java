@@ -6,13 +6,15 @@ import com.example.demo.web.dto.ProductRequest;
 
 public class ProductMapper {
 
-    /**
-     * Mengubah dari Database Entity ke Domain Model.
-     * Digunakan saat mengambil data dari PostgreSQL untuk dibawa ke Logic Bisnis.
-     */
     public static Product toDomain(ProductEntity entity) {
         if (entity == null) {
             return null;
+        }
+        if (entity.getName() == null || entity.getName().isBlank()) {
+            throw new IllegalArgumentException("Product name cannot be null or blank");
+        }
+        if (entity.getPrice() == null || entity.getPrice() <= 0) {
+            throw new IllegalArgumentException("Product price must be greater than 0");
         }
         return new Product(
             entity.getId(),
@@ -21,28 +23,32 @@ public class ProductMapper {
         );
     }
 
-    /**
-     * Mengubah dari Domain Model ke Database Entity.
-     * Digunakan saat ingin menyimpan data dari Logic Bisnis ke PostgreSQL.
-     */
     public static ProductEntity toEntity(Product product) {
         if (product == null) {
             return null;
         }
+        if (product.getName() == null || product.getName().isBlank()) {
+            throw new IllegalArgumentException("Product name cannot be null or blank");
+        }
+        if (product.getPrice() == null || product.getPrice() <= 0) {
+            throw new IllegalArgumentException("Product price must be greater than 0");
+        }
         ProductEntity entity = new ProductEntity();
-        entity.setId(product.getId());
+        if (product.getId() != null) {
+            entity.setId(product.getId());
+        }
         entity.setName(product.getName());
         entity.setPrice(product.getPrice());
         return entity;
     }
 
-    public static Product toModel(ProductRequest product) {
-        if (product == null) {
+    public static Product toModel(ProductRequest productRequest) {
+        if (productRequest == null) {
             return null;
         }
         Product model = new Product();
-        model.setName(product.getName());
-        model.setPrice(product.getPrice());
+        model.setName(productRequest.getName());
+        model.setPrice(productRequest.getPrice());
         return model;
     }
 }

@@ -1,6 +1,8 @@
 package com.example.demo.infrastructure.repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -16,20 +18,63 @@ public class PostgresUserRepository implements UserRepository {
 
     private final JpaUserRepository jpaUserRepository;
 
-    @Override
-    public Optional<UserEntity> findByUsername(String username) {
-        // Tetap mengembalikan Entity karena Service/Security membutuhkannya untuk mapping
-        return jpaUserRepository.findByUsername(username);
+    private User mapEntityToDomain(UserEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        User user = new User();
+        user.setId(entity.getId());
+        user.setUsername(entity.getUsername());
+        user.setPassword(entity.getPassword());
+        return user;
+    }
+
+    private UserEntity mapDomainToEntity(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserEntity entity = new UserEntity();
+        if (user.getId() != null) {
+            entity.setId(user.getId());
+        }
+        entity.setUsername(user.getUsername());
+        entity.setPassword(user.getPassword());
+        return entity;
     }
 
     @Override
-    public void save(User user) {
-        // PROSES MAPPING: Mengubah Domain Model (User) menjadi Database Entity (UserEntity)
-        UserEntity entity = new UserEntity();
-        entity.setUsername(user.getUsername());
-        entity.setPassword(user.getPassword());
-        
-        // Simpan Entity ke database melalui JPA
-        jpaUserRepository.save(entity);
+    public Optional<User> findByUsername(String username) {
+        return jpaUserRepository.findByUsername(username)
+                .map(this::mapEntityToDomain);
+    }
+
+    @Override
+    public User save(User user) {
+        UserEntity entity = mapDomainToEntity(user);
+        UserEntity saved = jpaUserRepository.save(entity);
+        return mapEntityToDomain(saved);
+    }
+
+    @Override
+    public Optional<User> findById(Long id) {
+        return jpaUserRepository.findById(id)
+                .map(this::mapEntityToDomain);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return jpaUserRepository.findAll().stream()
+                .map(this::mapEntityToDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        jpaUserRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        return jpaUserRepository.existsById(id);
     }
 }

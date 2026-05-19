@@ -45,9 +45,7 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<WebResponse<Product>> getById(@PathVariable Long id) {
-        // Cukup panggil satu baris ini
         Product product = productService.getById(id);
-
         return ResponseEntity.ok(WebResponse.<Product>builder()
                 .message("Berhasil mengambil data")
                 .data(product)
